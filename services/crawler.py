@@ -8,8 +8,8 @@ from bs4 import BeautifulSoup
 
 
 TARGET_URL = "https://www.flashoot.com/"
-MAX_PAGES = 50
-TIMEOUT = 30
+MAX_PAGES = 10
+TIMEOUT = 15
 
 
 class CrawlerService:
@@ -22,14 +22,12 @@ class CrawlerService:
         self.results.clear()
 
         try:
-            await self._crawl_with_playwright(TARGET_URL)
-        except ImportError:
-            try:
-                await self._crawl_with_httpx(TARGET_URL)
-            except Exception as e:
-                raise RuntimeError(f"Crawling failed: {e}")
+            await self._crawl_with_httpx(TARGET_URL)
         except Exception as e:
-            raise RuntimeError(f"Playwright crawling failed: {e}")
+            try:
+                await self._crawl_with_playwright(TARGET_URL)
+            except Exception as pe:
+                raise RuntimeError(f"Crawling failed: httpx error: {e}, playwright error: {pe}")
 
         return {
             "pages": len(self.visited),
