@@ -179,7 +179,8 @@ class CrawlerService:
                                                  "/feed/", "/comment"]):
             return None
 
-        if normalized.startswith(TARGET_URL) and normalized not in self.visited:
+        # Accept any flashoot.com URL, not just exact matches
+        if "flashoot.com" in normalized:
             return normalized
 
         return None
