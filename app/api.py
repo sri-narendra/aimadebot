@@ -12,6 +12,34 @@ from utils.security import sanitize_input, detect_injection, validate_prompt
 
 router = APIRouter()
 
+BOT_NAME = "Flashoot Assistant"
+
+CUSTOMER_FRIENDLY_FALLBACK = (
+    "Thanks for asking! I don't have that exact detail in my current knowledge base yet, "
+    "but Flashoot focuses on fast, high-quality short-form video creation and creator-driven services. "
+    "If you'd like, I can share our services, delivery model, and social links."
+)
+
+CAPABILITY_RESPONSE = (
+    f"I'm {BOT_NAME}, here to help you with Flashoot information! "
+    "I can help you with services, pricing packages, booking flow, delivery model, "
+    "social links, and company details. "
+    "For quick help, ask things like: 'What services do you offer?', "
+    "'How fast is delivery?', or 'Share your social media links.'"
+)
+
+CAPABILITY_PATTERNS = (
+    "what can you do",
+    "what do you do",
+    "how can you help",
+    "your services",
+    "services you offer",
+    "who are you",
+    "what are you",
+    "help me",
+    "your capabilities",
+)
+
 
 class ChatMessage(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
@@ -25,6 +53,11 @@ class IngestionResponse(BaseModel):
     message: str
 
 
+def _is_capability_question(message: str) -> bool:
+    msg = message.lower()
+    return any(pattern in msg for pattern in CAPABILITY_PATTERNS)
+
+
 @router.get("/health")
 async def health():
     return {
@@ -33,6 +66,7 @@ async def health():
         "vector_db": settings.vector_db,
         "top_k": settings.top_k_results,
         "fallback_enabled": settings.enable_provider_fallback,
+        "bot_name": BOT_NAME,
     }
 
 
@@ -65,13 +99,23 @@ async def chat(request: Request, body: ChatMessage):
 
     user_message = validation["cleaned_message"]
 
+    # Check for capability questions
+    if _is_capability_question(user_message):
+        async def capability_generator():
+            for word in CAPABILITY_RESPONSE.split():
+                yield f"data: {json.dumps({'type': 'content', 'content': word + ' '})}\n\n"
+            yield "data: [DONE]\n\n"
+        return StreamingResponse(capability_generator(), media_type="text/event-stream")
+
     docs = await retriever.retrieve(user_message)
 
     if not docs:
-        return StreamingResponse(
-            _stream_error("I couldn't find relevant information about that in the Flashoot website content."),
-            media_type="text/event-stream",
-        )
+        # Use customer-friendly fallback instead of error
+        async def fallback_generator():
+            for word in CUSTOMER_FRIENDLY_FALLBACK.split():
+                yield f"data: {json.dumps({'type': 'content', 'content': word + ' '})}\n\n"
+            yield "data: [DONE]\n\n"
+        return StreamingResponse(fallback_generator(), media_type="text/event-stream")
 
     context = _build_context(docs)
     citations = _build_citations(docs)

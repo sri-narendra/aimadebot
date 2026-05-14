@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 
 TARGET_URL = "https://www.flashoot.com/"
-MAX_PAGES = 10
+MAX_PAGES = 50
 TIMEOUT = 15
 
 
