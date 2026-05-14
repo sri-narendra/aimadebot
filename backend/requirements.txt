@@ -1,0 +1,13 @@
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+langchain==0.3.14
+langchain-community==0.3.14
+sentence-transformers==3.3.1
+chromadb==0.5.18
+faiss-cpu==1.9.0
+beautifulsoup4==4.12.7
+playwright==1.49.1
+httpx==0.28.1
+numpy==1.26.4
+pydantic==2.10.3
+python-dotenv==1.0.1

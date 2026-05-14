@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: flashoot-chatbot
+    runtime: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      pip install -r requirements.txt
+      python -m playwright install chromium --with-deps
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: LLM_PROVIDER
+        value: groq
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MISTRAL_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: VECTOR_DB
+        value: chroma
+      - key: CHROMA_DB_DIR
+        value: /var/data/vectordb
+      - key: TOP_K_RESULTS
+        value: "4"
+      - key: MAX_CONTEXT_CHARS
+        value: "4000"
+      - key: ALLOWED_ORIGIN
+        value: "*"
+      - key: ENABLE_PROVIDER_FALLBACK
+        value: "true"
+    disk:
+      name: vectordb
+      mountPath: /var/data
+      sizeGB: 1
