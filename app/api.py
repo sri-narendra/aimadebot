@@ -147,6 +147,20 @@ async def ingest(request: Request):
             for c in page_chunks:
                 chunks.append({"url": url, "text": c})
 
+        # Load and index data.json for additional company info
+        data_json_path = os.path.join(settings.chroma_db_dir, "..", "..", "data", "flashoot_data.json")
+        if os.path.exists(data_json_path):
+            with open(data_json_path, "r", encoding="utf-8") as f:
+                import json as json_mod
+                data = json_mod.load(f)
+            
+            # Extract key information from JSON
+            data_chunks = _extract_datajson_chunks(data)
+            for chunk in data_chunks:
+                text_chunks = chunk_text(chunk["text"], chunk_size=settings.chunk_size, chunk_overlap=settings.chunk_overlap)
+                for tc in text_chunks:
+                    chunks.append({"url": chunk["url"], "text": tc})
+
         import json as json_mod
         raw_path = os.path.join(settings.chroma_db_dir, "..", "data", "raw")
         processed_path = os.path.join(settings.chroma_db_dir, "..", "data", "processed")
@@ -202,3 +216,69 @@ async def _stream_error(message: str):
     data = json.dumps({"type": "error", "content": message})
     yield f"data: {data}\n\n"
     yield "data: [DONE]\n\n"
+
+
+def _extract_datajson_chunks(data: dict) -> list:
+    chunks = []
+    
+    # Company overview
+    if "company" in data:
+        c = data["company"]
+        text = f"About Flashoot: {c.get('name', 'Flashoot')} - {c.get('tagline', '')}. {c.get('business_model', '')}. Founded {c.get('founded', '')}. Operations in {', '.join(c.get('operations', []))}. Scale: {c.get('scale_claims', {}).get('reels_delivered', '')} reels delivered, {c.get('scale_claims', {}).get('brands_partnered', '')} brands partnered, rating {c.get('scale_claims', {}).get('client_rating', '')}."
+        chunks.append({"url": "flashoot://company", "text": text})
+    
+    # Founders
+    if "founders_and_team" in data:
+        names = [f"{f['name']} ({f['role']})" for f in data["founders_and_team"]]
+        text = f"Flashoot Team: {', '.join(names)}"
+        chunks.append({"url": "flashoot://team", "text": text})
+    
+    # Services
+    if "services" in data:
+        s = data["services"]
+        text = f"Flashoot Services: Consumer services include {', '.join(s.get('consumer_services', []))}. Business services include {', '.join(s.get('business_services', []))}. Premium packages: {', '.join(s.get('premium_packages', []))}. Delivery: {s.get('delivery_claim', '')}. Events: {', '.join(s.get('event_types', []))}"
+        chunks.append({"url": "flashoot://services", "text": text})
+    
+    # Contact info
+    if "company" in data:
+        c = data["company"]
+        text = f"Contact Flashoot: Email: {c.get('support_email', '')}. Phone: {', '.join(c.get('support_phone', []))}. Address: {c.get('full_address', '')}"
+        chunks.append({"url": "flashoot://contact", "text": text})
+    
+    # Pricing
+    if "pricing" in data.get("business", {}):
+        p = data["business"]["pricing"].get("estimated_range", {})
+        text = f"Flashoot Pricing: Basic reels ${p.get('basic', '20-50')}, Premium ${p.get('premium', '50-150')}, Subscription ${p.get('subscription', '200-1000')}/month, Enterprise custom pricing."
+        chunks.append({"url": "flashoot://pricing", "text": text})
+    
+    # Mobile apps
+    if "mobile_apps" in data:
+        ma = data["mobile_apps"]
+        text = f"Flashoot Apps: Customer app 'Flashoot: Video & Reel Makers' on Android (com.flashoot.user) and iOS (ID 6504755078). Partner app 'Flashoot Partner' on Android (com.flashoot.partner) and iOS (ID 6550917948)."
+        chunks.append({"url": "flashoot://apps", "text": text})
+    
+    # Locations
+    if "expansion" in data:
+        e = data["expansion"]
+        text = f"Flashoot Availability: India cities: {', '.join(e.get('india_cities', []))}. International: {', '.join(e.get('international_presence', []))}"
+        chunks.append({"url": "flashoot://locations", "text": text})
+    
+    # Social media
+    if "social_media" in data:
+        sm = data["social_media"]
+        links = []
+        if "linkedin" in sm: links.append(f"LinkedIn: {sm['linkedin'].get('url', '')}")
+        if "instagram" in sm: links.append(f"Instagram: {sm['instagram'].get('url_pattern', '')}")
+        if "facebook" in sm: links.append(f"Facebook: {sm['facebook'].get('url_pattern', '')}")
+        if "twitter" in sm: links.append(f"Twitter: {sm['twitter'].get('url_pattern', '')}")
+        if "youtube" in sm: links.append(f"YouTube: {sm['youtube'].get('url_pattern', '')}")
+        text = f"Flashoot Social Media: {', '.join(links)}"
+        chunks.append({"url": "flashoot://social", "text": text})
+    
+    # FAQ
+    if "faq" in data and "common_questions" in data["faq"]:
+        for faq in data["faq"]["common_questions"][:10]:
+            text = f"Q: {faq.get('question', '')} A: {faq.get('answer', '')}"
+            chunks.append({"url": "flashoot://faq", "text": text})
+    
+    return chunks
