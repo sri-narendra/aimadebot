@@ -4,29 +4,33 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flashoot AI Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-tertiary: #1a1a26;
-  --bg-card: #16161f;
-  --border-color: #2a2a3a;
-  --text-primary: #ffffff;
-  --text-secondary: #a0a0b0;
-  --text-muted: #6a6a7a;
-  --accent: #6366f1;
-  --accent-hover: #818cf8;
-  --accent-glow: rgba(99,102,241,0.4);
-  --success: #22c55e;
-  --error: #ef4444;
-  --warning: #f59e0b;
-  --user-bubble: #6366f1;
-  --bot-bubble: #1a1a26;
+  --bg-primary: #0D0000;
+  --bg-secondary: #1A0000;
+  --bg-tertiary: #1C0505;
+  --bg-card: #1C0505;
+  --border-color: rgba(255,255,255,0.08);
+  --text-primary: #FFFFFF;
+  --text-secondary: #CCCCCC;
+  --text-muted: #888888;
+  --accent: #CC0000;
+  --accent-hover: #FF2200;
+  --accent-glow: rgba(232,0,28,0.4);
+  --success: #22C55E;
+  --error: #EF4444;
+  --warning: #F59E0B;
+  --user-bubble: #CC0000;
+  --bot-bubble: #1A0000;
+  --gold: #D4A843;
   --shadow: 0 8px 32px rgba(0,0,0,0.6);
-  --radius: 16px;
-  --radius-sm: 10px;
+  --radius: 12px;
+  --radius-sm: 8px;
   --radius-full: 999px;
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -57,7 +61,7 @@ body {
   align-items: center;
   justify-content: center;
 }
-.chat-toggle:hover { transform: scale(1.08); background: var(--accent-hover); }
+.chat-toggle:hover { transform: scale(1.08); background: var(--accent-hover); box-shadow: 0 6px 30px rgba(232,0,28,0.6); }
 .chat-toggle svg { width: 28px; height: 28px; fill: currentColor; }
 
 .chat-container {
@@ -170,12 +174,15 @@ body {
   line-height: 1.55; font-size: 13px; word-wrap: break-word;
 }
 .message.user .message-content {
-  background: var(--accent); color: #fff;
+  background: var(--accent);
+  color: #fff;
   border-bottom-right-radius: 4px;
 }
 .message.bot .message-content {
-  background: var(--bot-bubble); border: 1px solid var(--border-color);
-  color: var(--text-primary); border-bottom-left-radius: 4px;
+  background: var(--bot-bubble);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-bottom-left-radius: 4px;
 }
 
 .message-content p { margin-bottom: 8px; }
@@ -286,10 +293,27 @@ body {
   max-width: 720px; margin: 0 auto; padding: 60px 24px;
   text-align: center;
 }
-.demo-content h1 { font-size: 32px; margin-bottom: 12px; background: linear-gradient(135deg, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.demo-content p { color: var(--text-secondary); font-size: 16px; line-height: 1.7; max-width: 520px; margin: 0 auto 8px; }
-.demo-content .flashoot-link { display: inline-block; margin-top: 16px; padding: 10px 24px; background: var(--accent); color: #fff; text-decoration: none; border-radius: var(--radius-sm); font-size: 14px; transition: background 0.2s; }
-.demo-content .flashoot-link:hover { background: var(--accent-hover); }
+.demo-content h1 {
+  font-size: 48px; margin-bottom: 16px; font-weight: 900;
+  color: var(--text-primary); letter-spacing: -1px;
+}
+.demo-content h1 span { color: var(--accent); }
+.demo-content .tagline {
+  font-size: 18px; color: var(--accent); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px;
+}
+.demo-content p { color: var(--text-secondary); font-size: 16px; line-height: 1.7; max-width: 520px; margin: 0 auto 16px; }
+.demo-content .stats {
+  display: flex; justify-content: center; gap: 32px; margin: 24px 0;
+}
+.demo-content .stat { text-align: center; }
+.demo-content .stat-num { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+.demo-content .stat-label { font-size: 12px; color: var(--text-muted); text-transform: uppercase; }
+.demo-content .flashoot-link { 
+  display: inline-block; margin-top: 8px; padding: 14px 32px; background: var(--accent); 
+  color: #fff; text-decoration: none; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+  transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+}
+.demo-content .flashoot-link:hover { background: var(--accent-hover); transform: scale(1.02); }
 
 @media (max-width: 480px) {
   .chat-container { width: calc(100vw - 24px); right: 12px; bottom: 88px; height: calc(100vh - 120px); max-height: none; }
@@ -302,9 +326,15 @@ body {
 <body>
 
 <div class="demo-content" id="demoContent">
-  <h1>Flashoot AI Assistant</h1>
-  <p>Ask anything about Flashoot — products, services, pricing, and more. Powered by RAG with real-time website content retrieval.</p>
-  <a class="flashoot-link" href="https://www.flashoot.com" target="_blank" rel="noopener">Visit Flashoot →</a>
+  <p class="tagline">We Shoot + Edit + Deliver Reels in 10 Minutes</p>
+  <h1>FLASHOOT <span>AI</span></h1>
+  <p>Ask anything about Flashoot — services, pricing, packages, and more. Powered by AI with instant answers.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-num">50K+</div><div class="stat-label">Reels Delivered</div></div>
+    <div class="stat"><div class="stat-num">4.8★</div><div class="stat-label">Client Rating</div></div>
+    <div class="stat"><div class="stat-num">150+</div><div class="stat-label">Brand Partners</div></div>
+  </div>
+  <a class="flashoot-link" href="https://www.flashoot.com" target="_blank" rel="noopener">Book Now →</a>
 </div>
 
 <button class="chat-toggle" id="chatToggle" aria-label="Toggle chat">
