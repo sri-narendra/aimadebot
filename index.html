@@ -6,25 +6,25 @@
 <title>Flashoot AI Assistant</title>
 <style>
 :root {
-  --bg-primary: #0f1117;
-  --bg-secondary: #1a1d27;
-  --bg-tertiary: #252836;
-  --bg-card: #1e2030;
-  --border-color: #2e3144;
-  --text-primary: #e8e9f0;
-  --text-secondary: #9598b0;
-  --text-muted: #6b6f8a;
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-tertiary: #1a1a26;
+  --bg-card: #16161f;
+  --border-color: #2a2a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #6a6a7a;
   --accent: #6366f1;
-  --accent-hover: #5558e6;
-  --accent-glow: rgba(99,102,241,0.25);
-  --success: #34d399;
-  --error: #f87171;
-  --warning: #fbbf24;
+  --accent-hover: #818cf8;
+  --accent-glow: rgba(99,102,241,0.4);
+  --success: #22c55e;
+  --error: #ef4444;
+  --warning: #f59e0b;
   --user-bubble: #6366f1;
-  --bot-bubble: #1e2030;
-  --shadow: 0 8px 32px rgba(0,0,0,0.5);
-  --radius: 12px;
-  --radius-sm: 8px;
+  --bot-bubble: #1a1a26;
+  --shadow: 0 8px 32px rgba(0,0,0,0.6);
+  --radius: 16px;
+  --radius-sm: 10px;
   --radius-full: 999px;
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
@@ -193,17 +193,22 @@ body {
 }
 .message-content pre code { background: none; padding: 0; }
 
-.citations {
-  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border-color);
-  display: flex; flex-wrap: wrap; gap: 4px;
+.suggested-questions {
+  margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color);
 }
-.citation {
-  padding: 3px 10px; border-radius: var(--radius-full);
-  background: var(--accent-glow); border: 1px solid rgba(99,102,241,0.3);
-  color: var(--accent); font-size: 10px; cursor: pointer; text-decoration: none;
+.suggested-label {
+  font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500;
+}
+.suggested-btns {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.suggested-btn {
+  padding: 6px 12px; border-radius: var(--radius-full);
+  background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.25);
+  color: var(--text-secondary); font-size: 11px; cursor: pointer;
   transition: all 0.2s;
 }
-.citation:hover { background: var(--accent); color: #fff; }
+.suggested-btn:hover { background: var(--accent); color: #fff; }
 
 .typing-indicator {
   display: flex; gap: 4px; padding: 8px 0; align-items: center;
@@ -548,21 +553,30 @@ function escHtml(str) {
   return d.innerHTML;
 }
 
-function renderCitations(citations) {
-  if (!citations || citations.length === 0) return '';
-  let html = '<div class="citations">';
-  citations.forEach(c => {
-    html += `<a class="citation" href="${escHtml(c.url)}" target="_blank" rel="noopener">${escHtml(c.title || c.url)}</a>`;
+const SUGGESTED_QUESTIONS = [
+  "What services do you offer?",
+  "How much does it cost?",
+  "How fast is delivery?",
+  "How can I become a creator?",
+  "What cities are you available in?",
+  "How do I contact support?"
+];
+
+function renderSuggestedQuestions() {
+  const shuffled = [...SUGGESTED_QUESTIONS].sort(() => Math.random() - 0.5).slice(3);
+  let html = '<div class="suggested-questions">';
+  html += '<p class="suggested-label">Try asking:</p>';
+  html += '<div class="suggested-btns">';
+  shuffled.forEach(q => {
+    html += `<button class="suggested-btn" onclick="clickSuggested('${escHtml(q)}')">${escHtml(q)}</button>`;
   });
-  html += '</div>';
+  html += '</div></div>';
   return html;
 }
 
-function addFeedbackBtns(container) {
-  const div = document.createElement('div');
-  div.className = 'feedback-btns';
-  div.innerHTML = '<button class="feedback-btn" data-action="helpful">👍</button><button class="feedback-btn" data-action="not-helpful">👎</button>';
-  container.appendChild(div);
+function clickSuggested(text) {
+  els.input.value = text;
+  sendMessage();
 }
 
 // Streaming send
@@ -624,8 +638,7 @@ async function sendMessage() {
                 contentEl.innerHTML = parseMarkdown(fullContent);
                 scrollToBottom();
               } else if (parsed.type === 'citations') {
-                contentEl.innerHTML += renderCitations(parsed.citations);
-                addFeedbackBtns(contentEl);
+                contentEl.innerHTML += renderSuggestedQuestions();
                 scrollToBottom();
               } else if (parsed.type === 'error') {
                 contentEl.innerHTML = `<span class="error-message">${escHtml(parsed.content)}</span>`;
