@@ -32,12 +32,12 @@ CAPABILITY_PATTERNS = (
     "what can you do",
     "what do you do",
     "how can you help",
-    "your services",
-    "services you offer",
     "who are you",
     "what are you",
     "help me",
     "your capabilities",
+    "who is flashoot assistant",
+    "are you a bot",
 )
 
 
