@@ -148,7 +148,7 @@ async def ingest(request: Request):
                 chunks.append({"url": url, "text": c})
 
         # Load and index data.json for additional company info
-        data_json_path = os.path.join(settings.chroma_db_dir, "..", "..", "data", "flashoot_data.json")
+        data_json_path = "/app/data/flashoot_data.json"
         if os.path.exists(data_json_path):
             with open(data_json_path, "r", encoding="utf-8") as f:
                 import json as json_mod
