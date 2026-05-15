@@ -8,6 +8,11 @@ from bs4 import BeautifulSoup
 
 
 TARGET_URL = "https://www.flashoot.com/"
+EXTRA_PAGES = [
+    "https://www.flashoot.com/discover",
+    "https://www.flashoot.com/partner", 
+    "https://www.flashoot.com/journey",
+]
 MAX_PAGES = 50
 TIMEOUT = 15
 
@@ -21,11 +26,20 @@ class CrawlerService:
         self.visited.clear()
         self.results.clear()
 
+        # Start from all key pages
+        all_start_urls = [TARGET_URL] + EXTRA_PAGES
+        
         try:
-            await self._crawl_with_httpx(TARGET_URL)
+            for start_url in all_start_urls:
+                if len(self.visited) >= MAX_PAGES:
+                    break
+                await self._crawl_with_httpx(start_url)
         except Exception as e:
             try:
-                await self._crawl_with_playwright(TARGET_URL)
+                for start_url in all_start_urls:
+                    if len(self.visited) >= MAX_PAGES:
+                        break
+                    await self._crawl_with_playwright(start_url)
             except Exception as pe:
                 raise RuntimeError(f"Crawling failed: httpx error: {e}, playwright error: {pe}")
 
